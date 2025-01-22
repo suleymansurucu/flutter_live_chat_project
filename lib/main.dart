@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_projects/landing_page.dart';
-import 'package:flutter_chat_projects/services/firebase_auth_service.dart';
+import 'package:flutter_chat_projects/locator.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_chat_projects/viewmodel/user_view_model.dart';
+import 'package:provider/provider.dart';
+import 'app/landing_page.dart';
 import 'firebase_options.dart';
-
-// ...
-
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  setupLocator();
   runApp(const MyApp());
 }
 
@@ -21,13 +20,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Live Chat',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Colors.purple,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserViewModel()),
+      ],
+      child: MaterialApp(
+        title: 'Live Chat',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: Colors.purple,
+        ),
+        home: const LandingPage(),
       ),
-      home: LandingPage(authService: FirebaseAuthService(),),
     );
   }
 }
