@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_chat_projects/model/user_model.dart';
 import 'package:flutter_chat_projects/services/auth_base.dart';
 
@@ -17,6 +16,24 @@ class TestAuthenticationService implements AuthBase{
   @override
   Future<bool> signOut() {
     return Future.value(true);
+  }
+
+  @override
+  Future<UserModel> signInWithGoogle() {
+    // TODO: implement signInWithGoogle
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<UserModel?> createWithEmailAndPassword(String email, String password) {
+    // TODO: implement createWithEmailAndPassword
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<UserModel?> signInWithEmailAndPassword(String email, String password) {
+    // TODO: implement signInWithEmailAndPassword
+    throw UnimplementedError();
   }
 
 
