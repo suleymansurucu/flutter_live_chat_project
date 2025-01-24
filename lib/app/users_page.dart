@@ -7,6 +7,11 @@ class UsersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(onPressed: (){
+
+          }, icon: Icon(Icons.add))
+        ],
         title: Text('Users',style: TextStyle(color: Colors.white, fontSize: 24),),
         backgroundColor: Colors.purple,
       ),

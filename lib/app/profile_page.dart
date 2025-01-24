@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../viewmodel/user_view_model.dart';
+import '../viewmodel/user_view_model.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
@@ -16,7 +18,7 @@ class UserModel {
     return {
       'userID': userID,
       'email': email,
-      'userName': userName ?? '',
+      'userName': userName ?? email!.substring(0, email!.indexOf('@'))+buildRandomNumber() ,
       'profilePhotoUrl': profilePhotoUrl ?? '',
       'createdAt': createdAt ?? FieldValue.serverTimestamp(),
       'updatedAt': updatedAt ?? FieldValue.serverTimestamp(),
@@ -29,12 +31,17 @@ class UserModel {
         email = map['email'],
         userName = map['userName'],
         profilePhotoUrl = map['profilePhotoUrl'],
-        createdAt = (map['createdAt']as Timestamp).toDate() ,
+        createdAt = (map['createdAt'] as Timestamp).toDate(),
         updatedAt = (map['updatedAt'] as Timestamp).toDate(),
         rolesLevel = map['rolesLevel'];
 
   @override
   String toString() {
     return 'UserModel{userID: $userID, email: $email, userName: $userName, profilePhotoUrl: $profilePhotoUrl, createdAt: $createdAt, updatedAt: $updatedAt, rolesLevel: $rolesLevel}';
+  }
+
+  String buildRandomNumber() {
+    int randemNumber = Random().nextInt(999999);
+    return randemNumber.toString();
   }
 }

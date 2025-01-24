@@ -6,9 +6,11 @@ class MyCustomBottomNavi extends StatelessWidget {
   final TabItem currentTab;
   final ValueChanged<TabItem> onSelectedTab;
   final Map<TabItem, Widget> buildPage;
+  final Map<TabItem, GlobalKey<NavigatorState>> navigatorsKeys;
+
 
   const MyCustomBottomNavi(
-      {super.key, required this.currentTab, required this.onSelectedTab, required this.buildPage});
+      {super.key, required this.currentTab, required this.onSelectedTab, required this.buildPage, required this.navigatorsKeys});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,8 @@ class MyCustomBottomNavi extends StatelessWidget {
         tabBuilder: (context, index) {
           final showItem = TabItem.values[index];
           return CupertinoTabView(
-              builder: (context){ return buildPage[showItem] ?? Container();;});
+            navigatorKey: navigatorsKeys[showItem],
+              builder: (context){ return buildPage[showItem] ?? Container();});
         });
   }
 

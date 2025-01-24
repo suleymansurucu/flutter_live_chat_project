@@ -58,7 +58,7 @@ class UserRepository implements AuthBase {
       UserModel? userModel = await _firebaseAuthService.signInWithGoogle();
       bool _result = await _fireStoreDBService.saveUser(userModel!);
       if (_result) {
-        return userModel;
+        return await _fireStoreDBService.readUser(userModel.userID);
       } else {
         return null;
       }
@@ -75,7 +75,7 @@ class UserRepository implements AuthBase {
           .createWithEmailAndPassword(email, password);
       bool _result = await _fireStoreDBService.saveUser(userModel!);
       if (_result) {
-        return userModel;
+        return await _fireStoreDBService.readUser(userModel.userID);
       } else {
         return null;
       }
@@ -88,8 +88,9 @@ class UserRepository implements AuthBase {
     if (appMode == AppMode.DEBUG) {
       return await _testAuthService.signInWithEmailAndPassword(email, password);
     } else {
-      return await _firebaseAuthService.signInWithEmailAndPassword(
+      UserModel? _userModel= await _firebaseAuthService.signInWithEmailAndPassword(
           email, password);
+      return _fireStoreDBService.readUser(_userModel!.userID);
     }
   }
 }

@@ -22,4 +22,12 @@ class FireStoreDBService implements DBBase {
 
     return true;
   }
+
+  @override
+  Future<UserModel> readUser(String userID) async{
+     DocumentSnapshot _readUser=await _firebaseFirestore.collection('users').doc(userID).get();
+     Map<String,dynamic>? _readUserInformationMap= _readUser.data()as Map<String, dynamic>?;
+     print({UserModel.fromMap(_readUserInformationMap!).toString()});
+    return UserModel.fromMap(_readUserInformationMap!);
+  }
 }
