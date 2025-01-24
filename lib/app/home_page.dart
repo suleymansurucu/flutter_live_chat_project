@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_projects/app/dart_items.dart';
+import 'package:flutter_chat_projects/app/my_custom_bottom_navi.dart';
+import 'package:flutter_chat_projects/app/sign_in/profile_page.dart';
+import 'package:flutter_chat_projects/app/users_page.dart';
 import 'package:flutter_chat_projects/model/user_model.dart';
 
 import 'package:flutter_chat_projects/viewmodel/user_view_model.dart';
 import 'package:provider/provider.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final UserModel userModel;
 
   const HomePage({
@@ -13,10 +17,32 @@ class HomePage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final _userModel = Provider.of<UserViewModel>(context);
+  State<HomePage> createState() => _HomePageState();
+}
 
-    return Scaffold(
+class _HomePageState extends State<HomePage> {
+  TabItem _currentTab = TabItem.Users;
+
+  Map<TabItem, Widget> allPages() {
+    return {TabItem.Users: UsersPage(), TabItem.Profile: ProfilePage()};
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MyCustomBottomNavi(
+        currentTab: _currentTab,
+        buildPage: allPages(),
+        onSelectedTab: (onSelectedTab) {
+          print('Selected item is ${onSelectedTab.toString()}');
+          setState(() {
+            _currentTab = onSelectedTab;
+          });
+        });
+  }
+}
+
+/*
+Scaffold(
       appBar: AppBar(
         title: const Text('Home Page'),
         backgroundColor: Colors.purple,
@@ -31,9 +57,15 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Text('Welcome ${_userModel.user!.userID}'),
-      ),
+      body: MyCustomBottomNavi(
+          currentTab: _currentTab,
+          buildPage: allPages(),
+          onSelectedTab: (onSelectedTab) {
+            print('Selected item is ${onSelectedTab.toString()}');
+            setState(() {
+              _currentTab = onSelectedTab;
+            });
+          }),
     );
   }
 
@@ -42,4 +74,4 @@ class HomePage extends StatelessWidget {
     bool result = await _userModel.signOut();
     return result;
   }
-}
+ */
