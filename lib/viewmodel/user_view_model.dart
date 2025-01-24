@@ -7,6 +7,9 @@ import 'package:flutter_chat_projects/services/auth_base.dart';
 enum ViewState { Idle, Busy }
 
 class UserViewModel with ChangeNotifier implements AuthBase {
+  String? emailErrorMessage;
+  String? passwordErrorMesseage;
+
   ViewState _state = ViewState.Idle;
 
   ViewState get state => _state;
@@ -76,7 +79,7 @@ class UserViewModel with ChangeNotifier implements AuthBase {
   }
 
   @override
-  Future<UserModel?> signInWithGoogle() async{
+  Future<UserModel?> signInWithGoogle() async {
     try {
       state = ViewState.Busy;
       _user = (await _userRepository.signInWithGoogle())!;
@@ -90,14 +93,60 @@ class UserViewModel with ChangeNotifier implements AuthBase {
   }
 
   @override
-  Future<UserModel?> createWithEmailAndPassword(String email, String password) {
-    // TODO: implement createWithEmailAndPassword
-    throw UnimplementedError();
+  Future<UserModel?> createWithEmailAndPassword(
+      String email, String password) async {
+    try {
+      if (_emailAndPasswordCheck(email, password)) {
+        state = ViewState.Busy;
+        _user = (await _userRepository.createWithEmailAndPassword(
+            email, password))!;
+        return _user;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error in ViewModel Current User: $e');
+      return null;
+    } finally {
+      state = ViewState.Idle;
+    }
   }
 
   @override
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password) {
-    // TODO: implement signInWithEmailAndPassword
-    throw UnimplementedError();
+  Future<UserModel?> signInWithEmailAndPassword(
+      String email, String password) async {
+    try {
+      if (_emailAndPasswordCheck(email, password)) {
+        state = ViewState.Busy;
+        _user = (await _userRepository.signInWithEmailAndPassword(
+            email, password))!;
+        return _user;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error in ViewModel Current User: $e');
+      return null;
+    } finally {
+      state = ViewState.Idle;
+    }
+  }
+
+  bool _emailAndPasswordCheck(String? email, String? password) {
+    var result = true;
+    if (password!.length < 6) {
+      passwordErrorMesseage = 'Least minimum 6 characters';
+      result = false;
+    } else {
+      passwordErrorMesseage = null;
+    }
+    if (!email!.contains('@')) {
+      emailErrorMessage =
+          'Invalid Email, Please enter correctly your email address';
+      result = false;
+    } else {
+      emailErrorMessage = null;
+    }
+    return result;
   }
 }

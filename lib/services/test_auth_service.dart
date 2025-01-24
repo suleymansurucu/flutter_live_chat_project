@@ -5,12 +5,12 @@ class TestAuthenticationService implements AuthBase{
   String userID= '12312312';
   @override
   Future<UserModel?> currentUser() {
-    return Future.value(UserModel(userID: userID));
+    return Future.value(UserModel(userID: userID,email:'test@test.com'));
   }
 
   @override
   Future<UserModel?> signInAnonymously() async {
-    return await Future.delayed(Duration(seconds: 1), ()=> UserModel(userID: userID));
+    return await Future.delayed(Duration(seconds: 1), ()=> UserModel(userID: userID,email:'test@test.com'));
   }
 
   @override
@@ -19,21 +19,20 @@ class TestAuthenticationService implements AuthBase{
   }
 
   @override
-  Future<UserModel> signInWithGoogle() {
-    // TODO: implement signInWithGoogle
-    throw UnimplementedError();
+  Future<UserModel> signInWithGoogle() async{
+    return await Future.delayed(Duration(seconds: 1), ()=> UserModel(userID: 'google_user_id : 123456',email:'test@test.com'));
   }
 
   @override
-  Future<UserModel?> createWithEmailAndPassword(String email, String password) {
-    // TODO: implement createWithEmailAndPassword
-    throw UnimplementedError();
+  Future<UserModel?> createWithEmailAndPassword(String email, String password) async{
+    return await Future.delayed(Duration(seconds: 1), ()=> UserModel(userID: 'created_user_id : 123456',email:'test@test.com'));
+
   }
 
   @override
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password) {
-    // TODO: implement signInWithEmailAndPassword
-    throw UnimplementedError();
+  Future<UserModel?> signInWithEmailAndPassword(String email, String password) async{
+    return await Future.delayed(Duration(seconds: 1), ()=> UserModel(userID: 'signed_user_id : 123456',email:'test@test.com'));
+
   }
 
 

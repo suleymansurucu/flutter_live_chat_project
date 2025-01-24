@@ -21,7 +21,7 @@ class FirebaseAuthService implements AuthBase {
     if (user == null) {
       return null;
     } else {
-      return UserModel(userID: user.uid);
+      return UserModel(userID: user.uid, email:user.email);
     }
   }
 
@@ -72,14 +72,24 @@ class FirebaseAuthService implements AuthBase {
   }
 
   @override
-  Future<UserModel?> createWithEmailAndPassword(String email, String password) {
-    // TODO: implement createWithEmailAndPassword
-    throw UnimplementedError();
+  Future<UserModel?> createWithEmailAndPassword(String email, String password) async {
+    try {
+      UserCredential result = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+      return _userFromFirebase(result.user); // Doğru tipte döndürülüyor
+    } catch (e) {
+      print('Error signing in emailAndPassword: $e');
+      return null;
+    }
   }
 
   @override
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password) {
-    // TODO: implement signInWithEmailAndPassword
-    throw UnimplementedError();
+  Future<UserModel?> signInWithEmailAndPassword(String email, String password) async{
+    try {
+      UserCredential result = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+      return _userFromFirebase(result.user); // Doğru tipte döndürülüyor
+    } catch (e) {
+      print('Error signing in emailAndPassword: $e');
+      return null;
+    }
   }
 }

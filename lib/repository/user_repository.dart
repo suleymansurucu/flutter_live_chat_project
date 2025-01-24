@@ -4,6 +4,8 @@ import 'package:flutter_chat_projects/services/auth_base.dart';
 import 'package:flutter_chat_projects/services/firebase_auth_service.dart';
 import 'package:flutter_chat_projects/services/test_auth_service.dart';
 
+import '../services/firestore_db_service.dart';
+
 enum AppMode { DEBUG, RELEASE }
 
 class UserRepository implements AuthBase {
@@ -11,6 +13,7 @@ class UserRepository implements AuthBase {
       locator<FirebaseAuthService>();
   final TestAuthenticationService _testAuthService =
       locator<TestAuthenticationService>();
+  final FireStoreDBService _fireStoreDBService = locator<FireStoreDBService>();
 
   AppMode appMode = AppMode.RELEASE;
 
@@ -28,7 +31,13 @@ class UserRepository implements AuthBase {
     if (appMode == AppMode.DEBUG) {
       return await _testAuthService.signInAnonymously();
     } else {
-      return await _firebaseAuthService.signInAnonymously();
+      UserModel? userModel = await _firebaseAuthService.signInAnonymously();
+      bool _result = await _fireStoreDBService.saveUser(userModel!);
+      if (_result) {
+        return userModel;
+      } else {
+        return null;
+      }
     }
   }
 
@@ -42,23 +51,45 @@ class UserRepository implements AuthBase {
   }
 
   @override
-  Future<UserModel?> signInWithGoogle() async{
+  Future<UserModel?> signInWithGoogle() async {
     if (appMode == AppMode.DEBUG) {
       return await _testAuthService.signInWithGoogle();
     } else {
-      return await _firebaseAuthService.signInWithGoogle();
+      UserModel? userModel = await _firebaseAuthService.signInWithGoogle();
+      bool _result = await _fireStoreDBService.saveUser(userModel!);
+      if (_result) {
+        return userModel;
+      } else {
+        return null;
+      }
     }
   }
 
   @override
-  Future<UserModel?> createWithEmailAndPassword(String email, String password) {
-    // TODO: implement createWithEmailAndPassword
-    throw UnimplementedError();
+  Future<UserModel?> createWithEmailAndPassword(
+      String email, String password) async {
+    if (appMode == AppMode.DEBUG) {
+      return await _testAuthService.createWithEmailAndPassword(email, password);
+    } else {
+      UserModel? userModel = await _firebaseAuthService
+          .createWithEmailAndPassword(email, password);
+      bool _result = await _fireStoreDBService.saveUser(userModel!);
+      if (_result) {
+        return userModel;
+      } else {
+        return null;
+      }
+    }
   }
 
   @override
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password) {
-    // TODO: implement signInWithEmailAndPassword
-    throw UnimplementedError();
+  Future<UserModel?> signInWithEmailAndPassword(
+      String email, String password) async {
+    if (appMode == AppMode.DEBUG) {
+      return await _testAuthService.signInWithEmailAndPassword(email, password);
+    } else {
+      return await _firebaseAuthService.signInWithEmailAndPassword(
+          email, password);
+    }
   }
 }
