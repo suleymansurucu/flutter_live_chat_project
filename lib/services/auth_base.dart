@@ -8,5 +8,4 @@ abstract class AuthBase {
    Future<UserModel?>signInWithEmailAndPassword(String email, String password);
    Future<UserModel?>createWithEmailAndPassword(String email, String password);
 
-
 }

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_chat_projects/locator.dart';
+import 'package:flutter_chat_projects/model/message_model.dart';
 import 'package:flutter_chat_projects/model/user_model.dart';
 import 'package:flutter_chat_projects/repository/user_repository.dart';
 import 'package:flutter_chat_projects/services/auth_base.dart';
@@ -93,8 +96,8 @@ class UserViewModel with ChangeNotifier implements AuthBase {
   }
 
   @override
-  Future<UserModel?> createWithEmailAndPassword(
-      String email, String password) async {
+  Future<UserModel?> createWithEmailAndPassword(String email,
+      String password) async {
     try {
       if (_emailAndPasswordCheck(email, password)) {
         state = ViewState.Busy;
@@ -105,7 +108,7 @@ class UserViewModel with ChangeNotifier implements AuthBase {
         return null;
       }
     } catch (e) {
-      print('Error in ViewModel Current User: $e');
+      print('Error in ViewModel CreateWithEmailAndPassword : ${e.toString()}');
       return null;
     } finally {
       state = ViewState.Idle;
@@ -113,8 +116,8 @@ class UserViewModel with ChangeNotifier implements AuthBase {
   }
 
   @override
-  Future<UserModel?> signInWithEmailAndPassword(
-      String email, String password) async {
+  Future<UserModel?> signInWithEmailAndPassword(String email,
+      String password) async {
     try {
       if (_emailAndPasswordCheck(email, password)) {
         state = ViewState.Busy;
@@ -125,7 +128,7 @@ class UserViewModel with ChangeNotifier implements AuthBase {
         return null;
       }
     } catch (e) {
-      print('Error in ViewModel Current User: $e');
+      print('Error in ViewModel SingInWithEmailAndPassword : ${e.toString()}');
       return null;
     } finally {
       state = ViewState.Idle;
@@ -142,11 +145,32 @@ class UserViewModel with ChangeNotifier implements AuthBase {
     }
     if (!email!.contains('@')) {
       emailErrorMessage =
-          'Invalid Email, Please enter correctly your email address';
+      'Invalid Email, Please enter correctly your email address';
       result = false;
     } else {
       emailErrorMessage = null;
     }
     return result;
+  }
+
+  Future<bool?> updateUsername(String userID, String userName) async {
+   var result= await  _userRepository.updateUserName(userID,userName);
+    return result;
+  }
+  Future<String?> uploadFile(String userID, String fileType, File file) async {
+    var result= await  _userRepository.uploadFile(userID,fileType,file);
+    return result;
+  }
+  Future<List<UserModel>> getAllUsers()async{
+    var allUsersList= await _userRepository.getAllUsers();
+    return allUsersList;
+  }
+
+ Stream<List<MessageModel>> getMessages(String currentUserID, String textToUserID) {
+    return _userRepository.getMessages(currentUserID,textToUserID);
+ }
+
+  Future<bool> saveMessage(MessageModel saveMessage) {
+    return _userRepository.saveMessage(saveMessage);
   }
 }

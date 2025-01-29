@@ -77,7 +77,7 @@ class FirebaseAuthService implements AuthBase {
       UserCredential result = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
       return _userFromFirebase(result.user); // Doğru tipte döndürülüyor
     } catch (e) {
-      print('Error signing in emailAndPassword: $e');
+      print('Firebase Auth Service Error create in emailAndPassword: $e');
       return null;
     }
   }
@@ -88,7 +88,7 @@ class FirebaseAuthService implements AuthBase {
       UserCredential result = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
       return _userFromFirebase(result.user); // Doğru tipte döndürülüyor
     } catch (e) {
-      print('Error signing in emailAndPassword: $e');
+      print('Firebase Auth Service Error signing in emailAndPassword: $e');
       return null;
     }
   }

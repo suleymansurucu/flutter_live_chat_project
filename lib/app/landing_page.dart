@@ -9,12 +9,12 @@ class LandingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _userModel =  Provider.of<UserViewModel>(context);
-    if (_userModel.state == ViewState.Idle) {
-      if (_userModel.user == null) {
+    final userModel =  Provider.of<UserViewModel>(context);
+    if (userModel.state == ViewState.Idle) {
+      if (userModel.user == null) {
         return SignInPage();
       } else {
-        return HomePage(userModel: _userModel.user!);
+        return HomePage(userModel: userModel.user!);
       }
     } else {
       return Scaffold(

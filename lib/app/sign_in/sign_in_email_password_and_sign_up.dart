@@ -25,22 +25,32 @@ class _SignInEmailPasswordAndSignUpState extends State<SignInEmailPasswordAndSig
       final _userModel = Provider.of<UserViewModel>(context, listen: false);
 
       if (_formType == FormType.LogIn) {
-        UserModel? _userLogInModel =
-        await _userModel.signInWithEmailAndPassword(_email, _password);
+        try{
+          UserModel? _userLogInModel =
+          await _userModel.signInWithEmailAndPassword(_email, _password);
 
-        if (_userLogInModel != null) {
-          print('Sign In user: ${_userLogInModel.userID}');
-        } else {
-          print('Error: Login failed');
+          if (_userLogInModel != null) {
+            print('Sign In user: ${_userLogInModel.userID}');
+          } else {
+            print('Error: Login failed');
+          }
+        }catch(e){
+          print('catch an error in a sing in widget : $e');
         }
-      } else {
-        UserModel? _userCreateModel =
-        await _userModel.createWithEmailAndPassword(_email, _password);
 
-        if (_userCreateModel != null) {
-          print('Sign Up user: ${_userCreateModel.userID}');
-        } else {
-          print('Error: Account creation failed');
+      } else {
+        try{
+          UserModel? _userCreateModel =
+          await _userModel.createWithEmailAndPassword(_email, _password);
+
+          if (_userCreateModel != null) {
+            print('Sign Up user: ${_userCreateModel.userID}');
+          } else {
+            print('Error: Account creation failed');
+          }
+        }catch(e){
+          print('catch an error in a sign up widget : $e');
+
         }
       }
     } else {
@@ -79,7 +89,8 @@ class _SignInEmailPasswordAndSignUpState extends State<SignInEmailPasswordAndSig
         backgroundColor: Colors.purple,
         titleTextStyle: const TextStyle(color: Colors.white, fontSize: 18),
       ),
-      body: _userModel.state == ViewState.Idle ? SingleChildScrollView(
+      body: _userModel.state == ViewState.Idle ?
+      SingleChildScrollView(
 
         child: Padding(
           padding: const EdgeInsets.all(16.0),
