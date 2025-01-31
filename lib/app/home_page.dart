@@ -4,10 +4,10 @@ import 'package:flutter_chat_projects/app/my_custom_bottom_navi.dart';
 import 'package:flutter_chat_projects/app/profile_page.dart';
 import 'package:flutter_chat_projects/app/users_page.dart';
 import 'package:flutter_chat_projects/model/user_model.dart';
+import 'package:flutter_chat_projects/viewmodel/all_users_view_model.dart';
+import 'package:provider/provider.dart';
 
 import 'chats_page.dart';
-
-
 
 class HomePage extends StatefulWidget {
   final UserModel userModel;
@@ -27,11 +27,22 @@ class _HomePageState extends State<HomePage> {
   Map<TabItem, GlobalKey<NavigatorState>> navigatorKeys = {
     TabItem.Users: GlobalKey<NavigatorState>(),
     TabItem.Profile: GlobalKey<NavigatorState>(),
-    TabItem.Chats:GlobalKey<NavigatorState>()
+    TabItem.Chats: GlobalKey<NavigatorState>()
   };
 
   Map<TabItem, Widget> allPages() {
-    return {TabItem.Users: UsersPage(), TabItem.Profile: ProfilePage(),TabItem.Chats: ChatsPage()};
+    return {
+      TabItem.Users: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (context) => AllUsersViewModel(),
+
+          ),
+        ],child: UsersPage(),
+      ),
+      TabItem.Profile: ProfilePage(),
+      TabItem.Chats: ChatsPage()
+    };
   }
 
   @override

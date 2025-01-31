@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_chat_projects/model/chat_of_person.dart';
 import 'package:flutter_chat_projects/model/message_model.dart';
 import 'package:flutter_chat_projects/model/user_model.dart';
 import 'package:flutter_chat_projects/services/database_base.dart';
@@ -66,6 +67,7 @@ class FireStoreDBService implements DBBase {
     QuerySnapshot querySnapshot =
         await _firebaseFirestore.collection('users').get();
     List<UserModel> allUsers = [];
+
     for (DocumentSnapshot user in querySnapshot.docs) {
       UserModel userModel =
           UserModel.fromMap(user.data() as Map<String, dynamic>);
@@ -108,6 +110,20 @@ class FireStoreDBService implements DBBase {
     var recieverUserID = '${saveMessage.textTo}--${saveMessage.fromText}';
 
     var saveMessageMap = saveMessage.toMap();
+    await _firebaseFirestore.collection('chats').doc(myDocumentID).set({
+      'sender': saveMessage.fromText,
+      'receiver': saveMessage.textTo,
+      'last_message': saveMessage.messageText,
+      'seen_message': false,
+      'creat_at': saveMessage.dateTime ?? Timestamp.now()
+    });
+    await _firebaseFirestore.collection('chats').doc(recieverUserID).set({
+      'sender': saveMessage.textTo,
+      'receiver': saveMessage.fromText,
+      'last_message': saveMessage.messageText,
+      'seen_message': false,
+      'creat_at': saveMessage.dateTime ?? Timestamp.now()
+    });
 
     await _firebaseFirestore
         .collection('chats')
@@ -122,6 +138,53 @@ class FireStoreDBService implements DBBase {
         .collection('messages')
         .doc(messageID)
         .set(saveMessageMap);
+
     return true;
+  }
+
+  @override
+  Future<List<ChatOfPerson>> getAllConversations(String currentUserID) async {
+    QuerySnapshot querySnapshot = await _firebaseFirestore
+        .collection('chats')
+        .where('sender', isEqualTo: currentUserID)
+        .orderBy('creat_at', descending: true)
+        .get();
+    List<ChatOfPerson> allChatsofPerson = [];
+    for (DocumentSnapshot onlyChat in querySnapshot.docs) {
+      ChatOfPerson _onlyOneChatOfPerson =
+          ChatOfPerson.fromMap(onlyChat.data() as Map<String, dynamic>);
+      allChatsofPerson.add(_onlyOneChatOfPerson);
+    }
+    return allChatsofPerson;
+  }
+
+  @override
+  Future<List<UserModel>> getUserWithPagination(UserModel? lastUser, int usersToRetrieve) async {
+    QuerySnapshot querySnapshot;
+    List<UserModel> allUsers = [];
+
+    if (lastUser == null ) {
+      print('First time user is coming');
+      querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .orderBy('userName')
+          .limit(usersToRetrieve)
+          .get();
+    } else {
+      print('Second time user is coming');
+      querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .orderBy('userName')
+          .startAfter([lastUser.userName]) // Son kullanıcıya göre başla
+          .limit(usersToRetrieve)
+          .get();
+    }
+
+    for (DocumentSnapshot snapshot in querySnapshot.docs) {
+      UserModel singleUser = UserModel.fromMap(snapshot.data() as Map<String, dynamic>);
+      allUsers.add(singleUser);
+    }
+
+    return allUsers;
   }
 }

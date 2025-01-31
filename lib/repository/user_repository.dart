@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_chat_projects/locator.dart';
+import 'package:flutter_chat_projects/model/chat_of_person.dart';
 import 'package:flutter_chat_projects/model/message_model.dart';
 import 'package:flutter_chat_projects/model/user_model.dart';
 import 'package:flutter_chat_projects/services/auth_base.dart';
@@ -22,6 +23,7 @@ class UserRepository implements AuthBase {
       locator<FirebaseStorageService>();
 
   AppMode appMode = AppMode.RELEASE;
+   List<UserModel> allUsersList=[];
 
   @override
   Future<UserModel?> currentUser() async {
@@ -146,7 +148,7 @@ class UserRepository implements AuthBase {
       try {
         var result =
             await _firebaseStorageService.uploadFile(userID, fileType, file);
-        await _fireStoreDBService.updateProfilePhoto(userID,result);
+        await _fireStoreDBService.updateProfilePhoto(userID, result);
         return result;
       } catch (e) {
         print('Catch error in repo singInWithEmailAndPassword ${e.toString()}');
@@ -154,12 +156,13 @@ class UserRepository implements AuthBase {
       }
     }
   }
-  Future<List<UserModel>>getAllUsers()async{
+
+  Future<List<UserModel>> getAllUsers() async {
     if (appMode == AppMode.DEBUG) {
       return [];
     } else {
       try {
-        var allUsersList = await _fireStoreDBService.getAllUsers();
+        allUsersList = await _fireStoreDBService.getAllUsers();
 
         return allUsersList;
       } catch (e) {
@@ -169,12 +172,13 @@ class UserRepository implements AuthBase {
     }
   }
 
-  Stream<List<MessageModel>> getMessages(String currentUserID, String textToUserID) {
+  Stream<List<MessageModel>> getMessages(
+      String currentUserID, String textToUserID) {
     if (appMode == AppMode.DEBUG) {
       return Stream.empty();
     } else {
       try {
-       return _fireStoreDBService.getMessages(currentUserID, textToUserID);
+        return _fireStoreDBService.getMessages(currentUserID, textToUserID);
       } catch (e) {
         print('Catch error in user repo get Messages ${e.toString()}');
         return Stream.empty();
@@ -182,7 +186,7 @@ class UserRepository implements AuthBase {
     }
   }
 
-  Future<bool> saveMessage(MessageModel saveMessage) async{
+  Future<bool> saveMessage(MessageModel saveMessage) async {
     if (appMode == AppMode.DEBUG) {
       return true;
     } else {
@@ -191,6 +195,72 @@ class UserRepository implements AuthBase {
       } catch (e) {
         print('Catch error in user repo get Messages ${e.toString()}');
         return false;
+      }
+    }
+  }
+
+  Future<List<ChatOfPerson>?> getAllConversations(String currentUserID) async {
+    if (appMode == AppMode.DEBUG) {
+      return [];
+    } else {
+      try {
+        var chatUserList = await _fireStoreDBService.getAllConversations(currentUserID);
+
+        // Eğer boşsa doğrudan boş liste döndür
+        if (chatUserList.isEmpty) {
+          return [];
+        }
+
+        // Debug için verileri yazdır
+        print("Debug: Firebase'den gelen sohbetler: $chatUserList");
+
+        for (var onlyChat in chatUserList) {
+          var userListUsername = findUserInMyChat(onlyChat.receiver);
+
+          if (userListUsername != null) {
+            onlyChat.receiver_userName = userListUsername.userName ?? "Unknown User";
+
+            // Eğer profil fotoğrafı null veya boşsa, varsayılan URL ata
+            onlyChat.receiver_profileUrl = (userListUsername.profilePhotoUrl != null && userListUsername.profilePhotoUrl!.isNotEmpty)
+                ? userListUsername.profilePhotoUrl!
+                : "https://www.example.com/default_avatar.png"; // 🔹 Varsayılan URL
+          } else {
+            print('User not found for receiver: ${onlyChat.receiver}');
+            onlyChat.receiver_userName = "Unknown User";
+            onlyChat.receiver_profileUrl = "https://www.example.com/default_avatar.png"; // ✅ Varsayılan URL
+          }
+        }
+
+        // ✅ Döngü tamamlandıktan sonra listeyi dön
+        return chatUserList;
+
+      } catch (e) {
+        print('Error in getAllConversations: ${e.toString()}');
+        return null; // Hata durumunda `null` döndür
+      }
+    }
+  }
+
+
+  UserModel? findUserInMyChat(String userID) {
+    for (int i = 0; i < allUsersList.length; i++) {
+      if (allUsersList[i].userID == userID) {
+        return allUsersList[i];
+      } else {
+        return null;
+      }
+    }
+  }
+
+ Future<List<UserModel>> getUserWithPagination(UserModel? getLastUser, int getUserNumber) async{
+    if (appMode == AppMode.DEBUG) {
+      return [];
+    } else {
+      try {
+        return await _fireStoreDBService.getUserWithPagination(getLastUser, getUserNumber);
+      } catch (e) {
+        print('Catch error in user repo get Messages ${e.toString()}');
+        return [];
       }
     }
   }

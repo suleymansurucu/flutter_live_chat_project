@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_chat_projects/locator.dart';
+import 'package:flutter_chat_projects/model/chat_of_person.dart';
 import 'package:flutter_chat_projects/model/message_model.dart';
 import 'package:flutter_chat_projects/model/user_model.dart';
 import 'package:flutter_chat_projects/repository/user_repository.dart';
@@ -172,5 +173,13 @@ class UserViewModel with ChangeNotifier implements AuthBase {
 
   Future<bool> saveMessage(MessageModel saveMessage) {
     return _userRepository.saveMessage(saveMessage);
+  }
+
+  Future<List<ChatOfPerson>?> getAllConversations(String currentUserID) async{
+    return await _userRepository.getAllConversations(currentUserID);
+  }
+
+  Future<List<UserModel>> getUserWithPagination(UserModel? getLastUser, int getUserNumber) async{
+    return await _userRepository.getUserWithPagination(  getLastUser, getUserNumber);
   }
 }
