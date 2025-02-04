@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_chat_projects/locator.dart';
 import 'package:flutter_chat_projects/model/chat_of_person.dart';
@@ -182,4 +183,17 @@ class UserViewModel with ChangeNotifier implements AuthBase {
   Future<List<UserModel>> getUserWithPagination(UserModel? getLastUser, int getUserNumber) async{
     return await _userRepository.getUserWithPagination(  getLastUser, getUserNumber);
   }
+  Future<UserModel?> getUserById(String userID) async {
+    try {
+      var userDoc = await FirebaseFirestore.instance.collection('users').doc(userID).get();
+
+      if (userDoc.exists) {
+        return UserModel.fromMap(userDoc.data()!);
+      }
+    } catch (e) {
+      print("Error fetching user by ID: $e");
+    }
+    return null;
+  }
+
 }

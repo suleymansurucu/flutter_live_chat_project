@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_chat_projects/app/message_page.dart';
-import 'package:flutter_chat_projects/model/user_model.dart';
 import 'package:flutter_chat_projects/viewmodel/all_users_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -15,25 +14,21 @@ class UsersPage extends StatefulWidget {
 }
 
 class _UsersPageState extends State<UsersPage> {
-  List<UserModel> allUsers = [];
-  bool isLoading = false;
-  bool hasMore = true;
-  int getUserNumber = 10;
-  UserModel? _getLastUser;
-  ScrollController scrollController = ScrollController();
+  late ScrollController scrollController;
+  bool isFetching = false;
 
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) {        getMoreFetchUser();
+    scrollController = ScrollController();
 
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      getMoreFetchUser();
     });
 
     scrollController.addListener(() {
-      if (scrollController.position.atEdge &&
-          scrollController.position.pixels ==
-              scrollController.position.maxScrollExtent &&
-          !isLoading) {
+      if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200 &&
+          !isFetching) {
         getMoreFetchUser();
       }
     });
@@ -45,11 +40,23 @@ class _UsersPageState extends State<UsersPage> {
     super.dispose();
   }
 
+  void getMoreFetchUser() async {
+    final _allUsersViewModel = Provider.of<AllUsersViewModel>(context, listen: false);
+    if (isFetching || _allUsersViewModel.state == AllUsersViewState.Busy) return;
+
+    setState(() {
+      isFetching = true;
+    });
+
+     _allUsersViewModel.getMoreFetchUser();
+
+    setState(() {
+      isFetching = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final _allUsersViewModel = Provider.of<AllUsersViewModel>(context);
-    final _userViewModel = Provider.of<UserViewModel>(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -59,154 +66,56 @@ class _UsersPageState extends State<UsersPage> {
         backgroundColor: Colors.purple,
       ),
       body: Consumer<AllUsersViewModel>(
-          builder: (buildContext, allUsersViewModel, child) {
-        if (_allUsersViewModel.state == AllUsersViewState.Busy) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        } else if (_allUsersViewModel.state == AllUsersViewState.Loaded) {
+        builder: (context, allUsersViewModel, child) {
+          if (allUsersViewModel.state == AllUsersViewState.Busy && allUsersViewModel.allUsers.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           return ListView.builder(
-            itemCount: _allUsersViewModel.allUsersList.length,
+            itemCount: allUsersViewModel.allUsers.length + 1,
             controller: scrollController,
             itemBuilder: (context, index) {
-              if (index < allUsers.length) {
-                if (allUsers[index].userID == _userViewModel.user!.userID) {
-                  return SizedBox.shrink();
-                }
-                return createUserList(index);
-              } else {
-                return Padding(
+              if (index < allUsersViewModel.allUsers.length) {
+                return createUserList(index, allUsersViewModel);
+              } else if (allUsersViewModel.state == AllUsersViewState.Busy) {
+                return const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Center(child: CircularProgressIndicator()),
                 );
               }
+              return const SizedBox.shrink();
             },
           );
-        } else {
-          return Container();
-        }
-      }),
-    );
-  }
-
-/*  Future<void> getUser() async {
-    final userModel = Provider.of<UserViewModel>(context, listen: false);
-
-    if (!hasMore || isLoading) {
-      return;
-    }
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      List<UserModel> users =
-          await userModel.getUserWithPagination(_getLastUser, getUserNumber);
-
-      if (users.isNotEmpty) {
-        setState(() {
-          allUsers.addAll(users);
-          _getLastUser = allUsers.last;
-        });
-      } else {
-        setState(() {
-          hasMore = false;
-        });
-      }
-    } catch (error) {
-      print('Error fetching users: $error');
-    }
-
-    setState(() {
-      isLoading = false;
-    });
-  }
-
-  Widget buildUserList() {
-    final userModel = Provider.of<UserViewModel>(context, listen: false);
-
-    return RefreshIndicator(
-      onRefresh: refreshListOfUser,
-      child: ListView.builder(
-        itemCount: allUsers.length + (hasMore ? 1 : 0),
-        controller: scrollController,
-        itemBuilder: (context, index) {
-          if (index < allUsers.length) {
-            if (allUsers[index].userID == userModel.user!.userID) {
-              return SizedBox.shrink();
-            }
-            return createUserList(index);
-          } else {
-            return Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
         },
       ),
     );
   }
 
-  Widget createUserList(int index) {
+  Widget createUserList(int index, AllUsersViewModel viewModel) {
     final userModel = Provider.of<UserViewModel>(context, listen: false);
+    final user = viewModel.allUsers[index];
+
+    if (user.userID == userModel.user!.userID) {
+      return const SizedBox.shrink();
+    }
 
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => MessagePage(
-                currentUser: userModel.user as UserModel,
-                textToUser: allUsers[index])));
+                currentUser: userModel.user!,
+                textToUser: user)));
       },
       child: Card(
         child: ListTile(
-          title: Text(allUsers[index].userName.toString()),
-          subtitle: Text(allUsers[index].email.toString()),
+          title: Text(user.userName!),
+          subtitle: Text(user.email!),
           leading: CircleAvatar(
             backgroundColor: Colors.grey,
-            backgroundImage:
-                NetworkImage(allUsers[index].profilePhotoUrl.toString()),
+            backgroundImage: NetworkImage(user.profilePhotoUrl.toString()),
           ),
         ),
       ),
     );
   }
-
-  Future<void> refreshListOfUser() async {
-    setState(() {
-      allUsers = [];
-      _getLastUser = null;
-      hasMore = true;
-    });
-    await getUser();
-  }*/
-
-  void getMoreFetchUser() {
-    final _allUsersViewModel = Provider.of<AllUsersViewModel>(context);
-    _allUsersViewModel.getMoreFetchUser();
-  }
-  Widget createUserList(int index) {
-    final userModel = Provider.of<UserViewModel>(context, listen: false);
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => MessagePage(
-                currentUser: userModel.user as UserModel,
-                textToUser: allUsers[index])));
-      },
-      child: Card(
-        child: ListTile(
-          title: Text(allUsers[index].userName.toString()),
-          subtitle: Text(allUsers[index].email.toString()),
-          leading: CircleAvatar(
-            backgroundColor: Colors.grey,
-            backgroundImage:
-            NetworkImage(allUsers[index].profilePhotoUrl.toString()),
-          ),
-        ),
-      ),
-    );
-  }
-
 }

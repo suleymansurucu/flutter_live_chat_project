@@ -17,6 +17,8 @@ class ChatOfPerson {
     required this.creat_at,
     required this.last_message,
     this.seen_message_date,
+    this.receiver_userName = "Unknown",
+    this.receiver_profileUrl = "https://www.example.com/default_avatar.png",
   });
 
   @override
@@ -34,18 +36,19 @@ class ChatOfPerson {
       'creat_at': creat_at != null ? Timestamp.fromDate(creat_at!) : FieldValue.serverTimestamp(),
       'last_message': last_message,
       'seen_message_date': seen_message_date,
-
     };
   }
 
   factory ChatOfPerson.fromMap(Map<String, dynamic> map) {
     return ChatOfPerson(
-      sender: map['sender'] as String,
-      receiver: map['receiver'] as String,
-      seen_message: map['seen_message'] as bool,
+      sender: map['sender'] as String? ?? '',
+      receiver: map['receiver'] as String? ?? '',
+      seen_message: map['seen_message'] as bool? ?? false,
       creat_at: map['creat_at'] != null ? (map['creat_at'] as Timestamp).toDate() : null,
-      last_message: map['last_message'] as String,
-      seen_message_date: map['seen_message_date'],
+      last_message: map['last_message'] as String? ?? '',
+      seen_message_date: map['seen_message_date'] != null ? (map['seen_message_date'] as Timestamp).toDate() : null,
+      receiver_userName: map['receiver_userName'] as String? ?? "Unknown",
+      receiver_profileUrl: map['receiver_profileUrl'] as String? ?? "https://www.example.com/default_avatar.png",
     );
   }
 }

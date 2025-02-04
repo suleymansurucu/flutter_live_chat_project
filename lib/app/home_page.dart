@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_projects/app/dart_items.dart';
 import 'package:flutter_chat_projects/app/my_custom_bottom_navi.dart';
@@ -22,6 +23,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   TabItem _currentTab = TabItem.Users;
 
   Map<TabItem, GlobalKey<NavigatorState>> navigatorKeys = {
@@ -36,13 +38,19 @@ class _HomePageState extends State<HomePage> {
         providers: [
           ChangeNotifierProvider(
             create: (context) => AllUsersViewModel(),
-
           ),
-        ],child: UsersPage(),
+        ],
+        child: UsersPage(),
       ),
       TabItem.Profile: ProfilePage(),
       TabItem.Chats: ChatsPage()
     };
+  }
+
+  @override
+  void initState() {
+    pushNotification();
+    super.initState();
   }
 
   @override
@@ -60,6 +68,34 @@ class _HomePageState extends State<HomePage> {
             });
           }),
     );
+  }
+
+  void pushNotification() async {
+    NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print("🔔 Bildirim izni verildi!");
+    } else {
+      print("❌ Bildirim izni reddedildi.");
+    }
+
+    _firebaseMessaging.subscribeToTopic('all');
+
+    String? token = await _firebaseMessaging.getToken();
+    print("🔑 Firebase Token: $token");
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("📩 Yeni bildirim alındı: ${message.notification?.title}");
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print(
+          "📲 Bildirime tıklandı ve uygulama açıldı: ${message.notification?.title}");
+    });
   }
 }
 

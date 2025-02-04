@@ -8,15 +8,13 @@ enum AllUsersViewState { Idle, Error, Loaded, Busy }
 
 class AllUsersViewModel with ChangeNotifier {
   AllUsersViewState allUsersViewState = AllUsersViewState.Idle;
-  late List<UserModel> allUsers;
+  List<UserModel> allUsers = [];
   UserModel? _lastFetchedUsers;
 
-  List<UserModel> get allUsersList => allUsers;
+  final UserRepository _userRepository = locator<UserRepository>();
+  static const int getUserNumber = 10;
 
   AllUsersViewState get state => allUsersViewState;
-
-  static final int getUserNumber = 10;
-  final UserRepository _userRepository = locator<UserRepository>();
 
   set state(AllUsersViewState value) {
     allUsersViewState = value;
@@ -24,26 +22,28 @@ class AllUsersViewModel with ChangeNotifier {
   }
 
   AllUsersViewModel() {
-    allUsers = [];
-    _lastFetchedUsers = null;
-    getUserWithPagination(_lastFetchedUsers);
+    getUserWithPagination(null);
   }
 
-  getUserWithPagination(UserModel? lastFetchedUsers) async {
-    if (allUsersList.isNotEmpty) {
-      _lastFetchedUsers=allUsersList.last;
-      print('En son getirilen username' +_lastFetchedUsers!.userName.toString());
+  Future<void> getUserWithPagination(UserModel? lastFetchedUsers) async {
+    if (allUsers.isNotEmpty) {
+      _lastFetchedUsers = allUsers.last;
     }
-    state=AllUsersViewState.Busy;
-    allUsers = await _userRepository.getUserWithPagination(
+
+    state = AllUsersViewState.Busy;
+
+    List<UserModel> fetchedUsers = await _userRepository.getUserWithPagination(
         lastFetchedUsers, getUserNumber);
 
+    if (fetchedUsers.isNotEmpty) {
+      allUsers.addAll(fetchedUsers);
+      _lastFetchedUsers = fetchedUsers.last;
+    }
 
-    state=AllUsersViewState.Loaded;
+    state = AllUsersViewState.Loaded;
   }
 
   void getMoreFetchUser() {
-    print('Get More Fetch User...');
     getUserWithPagination(_lastFetchedUsers);
   }
 }
