@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_chat_projects/model/chat_of_person.dart';
 import 'package:flutter_chat_projects/model/message_model.dart';
 import 'package:flutter_chat_projects/model/user_model.dart';
@@ -32,7 +31,7 @@ class FireStoreDBService implements DBBase {
     Map<String, dynamic>? _readUserInformationMap =
         _readUser.data() as Map<String, dynamic>?;
     print({UserModel.fromMap(_readUserInformationMap!).toString()});
-    return UserModel.fromMap(_readUserInformationMap!);
+    return UserModel.fromMap(_readUserInformationMap);
   }
 
   @override
