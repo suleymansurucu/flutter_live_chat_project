@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primaryColor: Colors.purple,
         ),
-        home: const LandingPage(),
+        home: LandingPage(),
       ),
     );
   }
