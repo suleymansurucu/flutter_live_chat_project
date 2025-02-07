@@ -91,7 +91,6 @@ class _SignInEmailPasswordAndSignUpState extends State<SignInEmailPasswordAndSig
       ),
       body: _userModel.state == ViewState.Idle ?
       SingleChildScrollView(
-
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Center(
